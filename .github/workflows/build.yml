@@ -18,13 +18,13 @@ jobs:
         os: [windows-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Build
         shell: cmd
         run: build.cmd
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: TrayView-Setup-${{ matrix.os }}
           path: bin/TrayView-Setup.exe
