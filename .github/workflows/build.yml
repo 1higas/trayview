@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # The same AnyCPU exe runs natively on both; building on ARM64 too checks that the in-box
+    # compiler there (Framework Arm64) builds it as well.
+    strategy:
+      matrix:
+        os: [windows-latest, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: cmd
+        run: build.cmd
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TrayView-Setup-${{ matrix.os }}
+          path: bin/TrayView-Setup.exe
+
+      # Pushing a tag such as v1.0.0 publishes a release with the setup attached.
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" bin/TrayView-Setup.exe --title "TrayView ${GITHUB_REF_NAME#v}" --generate-notes
